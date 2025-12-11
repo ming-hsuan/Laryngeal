@@ -1,7 +1,7 @@
 // app.js
 
 // 你剛剛上傳成功的 BMP 對應的 Binary id
-const BINARY_ID = "347907";
+const BINARY_ID = "669832";
 
 function setStatus(msg) {
   document.getElementById("status").innerText = msg;
