@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>AI-assisted Laryngeal Image Parameter Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- 用一個簡單的 Bootstrap，讓畫面好看一點 -->
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.6.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+
+  <!-- 頂端標題（英文） -->
+  <header class="mb-4 text-center">
+    <h2>AI-assisted Laryngeal Image Parameter Calculator</h2>
+    <p class="text-muted mb-0">
+      Changhua Christian Hospital SMART on FHIR Demo
+    </p>
+  </header>
+
+  <!-- Step 1：輸入介面 -->
+  <div id="step1-view">
+    <form id="metaForm">
+      <div class="form-group">
+        <label for="patientId">Patient ID</label>
+        <input type="text"
+               class="form-control"
+               id="patientId"
+               placeholder="Enter patient ID"
+               required>
+      </div>
+
+      <div class="form-group">
+        <label for="patientName">Patient Name</label>
+        <input type="text"
+               class="form-control"
+               id="patientName"
+               placeholder="Enter patient name"
+               required>
+      </div>
+
+      <div class="form-group">
+        <label for="patientSex">Patient Sex</label>
+        <select id="patientSex" class="form-control" required>
+          <option value="">Select sex</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="patientAge">Patient Age</label>
+        <input type="number"
+               class="form-control"
+               id="patientAge"
+               placeholder="Enter patient age"
+               min="0"
+               max="120"
+               required>
+      </div>
+
+      <div class="form-group">
+        <label for="examDate">Examination Date</label>
+        <!-- 這個會自帶圖形化日期選擇器 -->
+        <input type="date"
+               class="form-control"
+               id="examDate"
+               required>
+      </div>
+
+      <div class="form-group">
+        <label for="modelSelect">Select Model</label>
+        <select id="modelSelect" class="form-control" required>
+          <option value="">Pick a model</option>
+          <option value="efficientnetb7">efficientnetb7</option>
+          <option value="vanilla2k">vanilla2k</option>
+          <option value="vanilla300">vanilla300</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="imageSelect">Select Image</label>
+        <select id="imageSelect" class="form-control" required>
+          <option value="">Pick an image</option>
+          <!--
+            這裡先用你剛上傳的 Binary id
+            之後沙盒重置、重新上傳後，只要更新這三個 value 即可
+          -->
+          <option value="670753">Still 5.bmp</option>
+          <option value="670754">Still 6.bmp</option>
+          <option value="670755">Still 7.bmp</option>
+        </select>
+        <small class="form-text text-muted">
+          ※ value = FHIR Binary 的 id，例如「670753」。
+        </small>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+
+  <!-- Step 2：結果畫面（預設隱藏，按 Submit 後由 app.js 顯示） -->
+  <div id="step2-view" style="display:none;">
+    <button id="backBtn" class="btn btn-link mb-3">&laquo; Back</button>
+
+    <h4 class="mb-3">Result</h4>
+
+    <div class="row">
+      <div class="col-md-5">
+        <h5>Selected Image</h5>
+        <img id="previewImage"
+             alt="Laryngeal image"
+             style="max-width:100%; border:1px solid #ccc; border-radius:4px;">
+      </div>
+
+      <div class="col-md-7">
+        <h5>Patient & Examination Info</h5>
+        <pre id="infoPanel" class="small bg-light p-2"></pre>
+
+        <h5 class="mt-3">AI Parameters (Demo)</h5>
+        <pre id="aiResultPanel" class="small bg-light p-2"></pre>
+
+        <button id="saveObsBtn" class="btn btn-success mt-2">
+          Save as FHIR Observation
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底下 debug 區塊，可看 form 收集到的 payload -->
+  <pre id="debug" class="mt-3 small text-monospace text-muted"></pre>
+
+</div>
+
+<!-- SMART JS Client -->
+<script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
+<!-- 正式版邏輯 -->
+<script src="app.js"></script>
+</body>
+</html>
