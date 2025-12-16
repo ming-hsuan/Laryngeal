@@ -13,39 +13,53 @@
     body {
       background: #f3f6fb;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
     }
+
     .app-card {
-      border-radius: 16px;
-      overflow: hidden;
+      border-radius: 18px;
+      overflow: visible;
     }
+
     .app-card .card-header {
       border-bottom: 1px solid #e5e9f2;
+      padding-top: 1.25rem;
+      padding-bottom: 1.25rem;
     }
+
     .app-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: #1f2933;
+      font-size: 1.6rem;
+      font-weight: 650;
+      color: #111827;
+      margin-bottom: 0.25rem;
     }
+
     .app-subtitle {
-      font-size: 0.9rem;
-      color: #6b7b93;
+      font-size: 0.98rem;
+      color: #6b7280;
+    }
+
+    .app-badges span {
+      font-size: 0.75rem;
     }
 
     /* 步驟條 */
     .stepper {
       display: flex;
       align-items: center;
+      justify-content: center;
       margin-top: 1rem;
     }
     .stepper-item {
       display: flex;
       align-items: center;
-      flex: 1;
+      flex: 0 0 auto;
       min-width: 0;
     }
     .stepper-circle {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 999px;
       display: flex;
       align-items: center;
@@ -57,19 +71,17 @@
       background: #fff;
     }
     .stepper-label {
-      margin-left: 0.5rem;
-      font-size: 0.85rem;
+      margin-left: 0.55rem;
+      font-size: 0.9rem;
       color: #9aa5b1;
       font-weight: 500;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .stepper-line {
       height: 2px;
       background: #d8e2f2;
       flex: 0 0 40px;
-      margin: 0 0.5rem;
+      margin: 0 0.75rem;
       border-radius: 999px;
     }
     .stepper-item.active .stepper-circle {
@@ -81,33 +93,74 @@
       color: #2563eb;
     }
 
-    /* 表單細節 */
+    /* 表單區塊 */
     .form-section-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #4b5563;
+      font-size: 0.95rem;
+      font-weight: 650;
+      color: #374151;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 0.5rem;
     }
     .form-control,
     .custom-select {
-      border-radius: 8px;
+      border-radius: 10px;
+      font-size: 0.98rem;
     }
-    .btn-primary {
-      border-radius: 999px;
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #374151;
     }
 
-    /* 結果頁 */
+    .btn-primary {
+      border-radius: 999px;
+      padding-left: 1.6rem;
+      padding-right: 1.6rem;
+      font-weight: 600;
+    }
+
+    /* 小標題：Original / AI Summary / PDF */
+    .section-heading {
+      font-size: 1rem;
+      font-weight: 650;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .section-heading::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      border-radius: 999px;
+      background: #2563eb;
+      margin-right: 0.45rem;
+    }
+
+    /* 結果區塊 */
+    #step2-view h4 {
+      font-size: 1.25rem;
+      font-weight: 650;
+      color: #111827;
+    }
     #step2-view h5 {
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       font-weight: 600;
       color: #374151;
     }
+
     #step2-view img {
       background: #f9fafb;
+    }
+
+    /* PDF iframe 區，避免被「裁掉感」 */
+    #aiPdfFrame {
+      width: 100%;
+      min-height: 60vh;  /* 至少佔六成螢幕高 */
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
     }
 
     /* debug 區塊 */
@@ -115,32 +168,33 @@
       max-height: 220px;
       overflow: auto;
       background: #f9fafb;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px dashed #d1d5db;
       padding: 0.75rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
     }
   </style>
 </head>
 <body>
 <div class="container py-4">
-  <div class="app-card card shadow-sm mx-auto" style="max-width: 1000px;">
-    <div class="card-header bg-white">
-      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-        <div>
-          <div class="app-title">AI-assisted Laryngeal Image Parameter Calculator</div>
-          <div class="app-subtitle">Changhua Christian Hospital · SMART on FHIR Demo</div>
-        </div>
-        <div class="mt-3 mt-md-0 text-md-right">
-          <span class="badge badge-pill badge-primary">Demo</span>
-          <span class="badge badge-pill badge-light border ml-1">Binary · DocumentReference</span>
-        </div>
+  <div class="app-card card shadow-sm mx-auto" style="max-width: 1100px;">
+    <div class="card-header bg-white text-center">
+      <div>
+        <div class="app-title">AI-assisted Laryngeal Image Parameter Calculator</div>
+        <div class="app-subtitle">Changhua Christian Hospital · SMART on FHIR Demo</div>
+      </div>
+      <div class="app-badges mt-2">
+        <span class="badge badge-pill badge-primary">Demo</span>
+        <span class="badge badge-pill badge-light border ml-1">Binary</span>
+        <span class="badge badge-pill badge-light border ml-1">DocumentReference</span>
       </div>
 
       <!-- 步驟條 -->
       <div class="stepper">
         <div class="stepper-item active" id="step1-indicator">
           <div class="stepper-circle">1</div>
-          <div class="stepper-label">Patient & Image</div>
+          <div class="stepper-label">Patient &amp; Image</div>
         </div>
         <div class="stepper-line"></div>
         <div class="stepper-item" id="step2-indicator">
@@ -195,7 +249,7 @@
 
           <hr>
 
-          <div class="form-section-title">AI model & test image</div>
+          <div class="form-section-title">AI model &amp; test image</div>
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="modelSelect">Select Model</label>
@@ -229,16 +283,16 @@
 
         <div class="card mb-3">
           <div class="card-body">
-            <h5 class="card-title mb-3">Patient & Examination Info</h5>
+            <h5 class="mb-3">Patient &amp; Examination Info</h5>
             <div class="row">
               <div class="col-md-6">
-                <ul class="list-unstyled mb-0">
+                <ul class="list-unstyled mb-1">
                   <li><strong>Patient Name:</strong> <span id="infoName"></span></li>
                   <li><strong>Sex / Age:</strong> <span id="infoSexAge"></span></li>
                 </ul>
               </div>
               <div class="col-md-6">
-                <ul class="list-unstyled mb-0">
+                <ul class="list-unstyled mb-1">
                   <li><strong>Examination Date:</strong> <span id="infoExamDate"></span></li>
                   <li><strong>Model / Image:</strong>
                     <span id="infoModel"></span> · <span id="infoImage"></span>
@@ -251,7 +305,7 @@
 
         <div class="row">
           <div class="col-md-6 mb-3">
-            <h5>Original Laryngeal Image</h5>
+            <div class="section-heading">Original Laryngeal Image</div>
             <img id="previewImage"
                  alt="Laryngeal image"
                  class="img-fluid"
@@ -259,7 +313,7 @@
           </div>
 
           <div class="col-md-6 mb-3">
-            <h5>AI Summary Image</h5>
+            <div class="section-heading">AI Summary Image</div>
             <img id="aiSummaryImage"
                  alt="AI summary"
                  class="img-fluid"
@@ -268,10 +322,17 @@
         </div>
 
         <div class="mt-3 mb-2">
-          <h5>AI Report (PDF)</h5>
+          <div class="section-heading">AI Report (PDF)</div>
           <iframe id="aiPdfFrame"
-                  title="AI PDF report"
-                  style="width:100%; height:520px; border:1px solid #e5e7eb; border-radius:8px;"></iframe>
+                  title="AI PDF report"></iframe>
+          <div class="mt-1">
+            <a id="aiPdfDownload"
+               href="#"
+               target="_blank"
+               style="font-size:0.88rem; display:none;">
+              Open PDF in new tab
+            </a>
+          </div>
         </div>
       </div>
     </div>
