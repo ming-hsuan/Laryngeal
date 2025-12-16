@@ -18,30 +18,32 @@
     }
 
     .app-card {
-      border-radius: 18px;
+      border-radius: 16px;
+      /* 取消 overflow: hidden，避免圖片 / PDF 被裁掉 */
       overflow: visible;
     }
 
     .app-card .card-header {
       border-bottom: 1px solid #e5e9f2;
-      padding-top: 1.25rem;
-      padding-bottom: 1.25rem;
     }
 
+    /* 頂端標題 */
+    .app-header {
+      text-align: center;
+    }
     .app-title {
-      font-size: 1.6rem;
-      font-weight: 650;
+      font-size: 1.6rem; /* 大標 */
+      font-weight: 700;
       color: #111827;
-      margin-bottom: 0.25rem;
+      letter-spacing: 0.02em;
     }
-
     .app-subtitle {
-      font-size: 0.98rem;
-      color: #6b7280;
+      font-size: 1rem;
+      color: #4b5563;
     }
-
-    .app-badges span {
-      font-size: 0.75rem;
+    .app-tags {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
     }
 
     /* 步驟條 */
@@ -49,12 +51,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 1rem;
+      margin-top: 1.25rem;
     }
     .stepper-item {
       display: flex;
       align-items: center;
-      flex: 0 0 auto;
       min-width: 0;
     }
     .stepper-circle {
@@ -64,23 +65,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 600;
       border: 2px solid #cbd2e1;
       color: #6b7b93;
       background: #fff;
     }
     .stepper-label {
-      margin-left: 0.55rem;
-      font-size: 0.9rem;
+      margin-left: 0.5rem;
+      font-size: 0.95rem;
       color: #9aa5b1;
       font-weight: 500;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .stepper-line {
       height: 2px;
       background: #d8e2f2;
-      flex: 0 0 40px;
+      flex: 0 0 50px;
       margin: 0 0.75rem;
       border-radius: 999px;
     }
@@ -93,101 +96,95 @@
       color: #2563eb;
     }
 
-    /* 表單區塊 */
+    /* 表單區 */
     .form-section-title {
-      font-size: 0.95rem;
-      font-weight: 650;
+      font-size: 1rem;
+      font-weight: 700;
       color: #374151;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 0.5rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
     }
-    .form-control,
-    .custom-select {
-      border-radius: 10px;
-      font-size: 0.98rem;
-    }
-    .form-group label {
-      font-size: 0.9rem;
+    label {
+      font-size: 0.95rem;
       font-weight: 500;
       color: #374151;
     }
-
+    .form-control,
+    .custom-select {
+      border-radius: 8px;
+      font-size: 0.95rem;
+      padding-top: 0.35rem;
+      padding-bottom: 0.35rem;
+    }
+    .form-row {
+      margin-bottom: 0.75rem;
+    }
     .btn-primary {
       border-radius: 999px;
-      padding-left: 1.6rem;
-      padding-right: 1.6rem;
+      padding-left: 1.75rem;
+      padding-right: 1.75rem;
       font-weight: 600;
     }
 
-    /* 小標題：Original / AI Summary / PDF */
-    .section-heading {
-      font-size: 1rem;
-      font-weight: 650;
-      color: #111827;
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-    .section-heading::before {
-      content: "";
-      display: inline-block;
-      width: 4px;
-      height: 18px;
-      border-radius: 999px;
-      background: #2563eb;
-      margin-right: 0.45rem;
-    }
-
-    /* 結果區塊 */
-    #step2-view h4 {
-      font-size: 1.25rem;
-      font-weight: 650;
+    /* 結果頁標題與小標 */
+    h4 {
+      font-size: 1.35rem;
+      font-weight: 700;
       color: #111827;
     }
     #step2-view h5 {
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: #374151;
+      font-size: 1.05rem; /* 小標變明顯 */
+      font-weight: 700;
+      color: #1f2933;
+      margin-bottom: 0.5rem;
     }
 
+    /* 圖片與 PDF */
     #step2-view img {
       background: #f9fafb;
     }
-
-    /* PDF iframe 區，避免被「裁掉感」 */
-    #aiPdfFrame {
-      width: 100%;
-      min-height: 60vh;  /* 至少佔六成螢幕高 */
+    #previewImage,
+    #aiSummaryImage {
       border: 1px solid #e5e7eb;
       border-radius: 8px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    #aiPdfFrame {
+      width: 100%;
+      height: 560px; /* 給一個固定高度，但外層不裁切 */
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #f9fafb;
     }
 
     /* debug 區塊 */
     #debug {
-      max-height: 220px;
+      max-height: 240px;
       overflow: auto;
       background: #f9fafb;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 1px dashed #d1d5db;
       padding: 0.75rem;
-      font-size: 0.8rem;
       line-height: 1.4;
+      font-size: 0.8rem;
     }
   </style>
 </head>
 <body>
 <div class="container py-4">
-  <div class="app-card card shadow-sm mx-auto" style="max-width: 1100px;">
-    <div class="card-header bg-white text-center">
-      <div>
+  <div class="app-card card shadow-sm mx-auto" style="max-width: 1040px;">
+    <div class="card-header bg-white">
+      <div class="app-header">
         <div class="app-title">AI-assisted Laryngeal Image Parameter Calculator</div>
         <div class="app-subtitle">Changhua Christian Hospital · SMART on FHIR Demo</div>
-      </div>
-      <div class="app-badges mt-2">
-        <span class="badge badge-pill badge-primary">Demo</span>
-        <span class="badge badge-pill badge-light border ml-1">Binary</span>
-        <span class="badge badge-pill badge-light border ml-1">DocumentReference</span>
+        <div class="app-tags">
+          <span class="badge badge-pill badge-primary">Demo</span>
+          <span class="badge badge-pill badge-light border ml-1">Binary</span>
+          <span class="badge badge-pill badge-light border ml-1">DocumentReference</span>
+        </div>
       </div>
 
       <!-- 步驟條 -->
@@ -283,16 +280,16 @@
 
         <div class="card mb-3">
           <div class="card-body">
-            <h5 class="mb-3">Patient &amp; Examination Info</h5>
+            <h5 class="card-title mb-3">Patient &amp; Examination Info</h5>
             <div class="row">
-              <div class="col-md-6">
-                <ul class="list-unstyled mb-1">
+              <div class="col-md-6 mb-2">
+                <ul class="list-unstyled mb-0">
                   <li><strong>Patient Name:</strong> <span id="infoName"></span></li>
                   <li><strong>Sex / Age:</strong> <span id="infoSexAge"></span></li>
                 </ul>
               </div>
-              <div class="col-md-6">
-                <ul class="list-unstyled mb-1">
+              <div class="col-md-6 mb-2">
+                <ul class="list-unstyled mb-0">
                   <li><strong>Examination Date:</strong> <span id="infoExamDate"></span></li>
                   <li><strong>Model / Image:</strong>
                     <span id="infoModel"></span> · <span id="infoImage"></span>
@@ -305,34 +302,24 @@
 
         <div class="row">
           <div class="col-md-6 mb-3">
-            <div class="section-heading">Original Laryngeal Image</div>
+            <h5>Original Laryngeal Image</h5>
             <img id="previewImage"
                  alt="Laryngeal image"
-                 class="img-fluid"
-                 style="border:1px solid #e5e7eb; border-radius:8px;">
+                 class="img-fluid">
           </div>
 
           <div class="col-md-6 mb-3">
-            <div class="section-heading">AI Summary Image</div>
+            <h5>AI Summary Image</h5>
             <img id="aiSummaryImage"
                  alt="AI summary"
-                 class="img-fluid"
-                 style="border:1px solid #e5e7eb; border-radius:8px;">
+                 class="img-fluid">
           </div>
         </div>
 
         <div class="mt-3 mb-2">
-          <div class="section-heading">AI Report (PDF)</div>
+          <h5>AI Report (PDF)</h5>
           <iframe id="aiPdfFrame"
                   title="AI PDF report"></iframe>
-          <div class="mt-1">
-            <a id="aiPdfDownload"
-               href="#"
-               target="_blank"
-               style="font-size:0.88rem; display:none;">
-              Open PDF in new tab
-            </a>
-          </div>
         </div>
       </div>
     </div>
