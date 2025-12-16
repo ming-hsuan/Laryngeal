@@ -1,6 +1,6 @@
 // app.js
 
-// 與 Python 一致的系統常數，請不要改這幾個字串
+// 與 Python 一致的系統常數
 const CATEGORY_SYSTEM = "https://cch.org.tw/fhir/CodeSystem/larynx-demo-category";
 const CATEGORY_CODE = "larynx-ai-report";
 
@@ -8,7 +8,7 @@ const MODEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/model";
 const IMAGE_LABEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/image-label";
 const RAW_BINARY_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/raw-binary-id";
 
-// 切換 Step 1 / Step 2 畫面，同步更新步驟條樣式
+// 切換 Step 1 / Step 2 畫面，同步更新步驟條
 function showStep(step) {
   const step1View = document.getElementById("step1-view");
   const step2View = document.getElementById("step2-view");
@@ -30,7 +30,7 @@ function showStep(step) {
   }
 }
 
-// 取 identifier 裡的 value
+// 從 identifier 抓值
 function getIdentifierValue(resource, system) {
   const ids = resource.identifier || [];
   const found = ids.find((id) => id.system === system);
@@ -146,7 +146,6 @@ FHIR.oauth2
               "Demo AI reports loaded. Please select model and test image.";
           }
 
-          // 填入 modelSelect 選項
           if (modelSelect) {
             modelSelect.innerHTML = '<option value="">Pick a model</option>';
             Array.from(models)
@@ -171,7 +170,7 @@ FHIR.oauth2
       }
     }
 
-    // === 2. 當模型改變時，更新 Image 下拉選項 ===
+    // === 2. 當模型改變時，更新 Image 下拉選單 ===
     if (modelSelect) {
       modelSelect.addEventListener("change", function () {
         const model = modelSelect.value;
@@ -205,7 +204,7 @@ FHIR.oauth2
       });
     }
 
-    // === 3. Submit：顯示第二個畫面 + 從 THAS 抓三個 Binary ===
+    // === 3. Submit：載入 BMP / PNG / PDF ===
     if (form) {
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -235,7 +234,6 @@ FHIR.oauth2
             "Collected form data:\n" + JSON.stringify(payload, null, 2);
         }
 
-        // 切換到 Step2 + 填病人資訊
         showStep(2);
 
         document.getElementById("infoName").innerText = payload.patientName;
@@ -248,6 +246,11 @@ FHIR.oauth2
         document.getElementById("previewImage").src = "";
         document.getElementById("aiSummaryImage").src = "";
         document.getElementById("aiPdfFrame").src = "";
+        const pdfLink = document.getElementById("aiPdfDownload");
+        if (pdfLink) {
+          pdfLink.style.display = "none";
+          pdfLink.href = "#";
+        }
 
         try {
           // 1) 原始 BMP
@@ -271,6 +274,10 @@ FHIR.oauth2
             const pdfUrl = await fetchBinaryAsDataUrl(client, mapping.pdfBinaryId);
             if (pdfUrl) {
               document.getElementById("aiPdfFrame").src = pdfUrl;
+              if (pdfLink) {
+                pdfLink.href = pdfUrl;
+                pdfLink.style.display = "inline";
+              }
             }
           }
         } catch (err) {
@@ -291,3 +298,4 @@ FHIR.oauth2
     console.error(error);
     alert("SMART authorization failed. See console.");
   });
+
