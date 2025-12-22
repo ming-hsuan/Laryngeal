@@ -10,48 +10,75 @@
         href="https://maxcdn.bootstrapcdn.com/bootstrap/4.6.2/css/bootstrap.min.css">
 
   <style>
+    :root{
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --brand:#2563eb;
+      --brand-2:#1d4ed8;
+      --soft:#f9fafb;
+    }
+
     body {
-      background: #f3f6fb;
+      background: var(--bg);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
       font-size: 16px;
-      line-height: 1.6;
+      line-height: 1.65;
+      color: var(--text);
     }
 
+    /* App shell */
     .app-card {
-      border-radius: 16px;
-      /* 取消 overflow: hidden，避免圖片 / PDF 被裁掉 */
-      overflow: visible;
+      border-radius: 18px;
+      border: 1px solid rgba(17,24,39,.06);
+      overflow: visible; /* 避免圖片/PDF被裁切 */
+      background: var(--card);
     }
 
-    .app-card .card-header {
-      border-bottom: 1px solid #e5e9f2;
+    .card-header{
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border-bottom: 1px solid rgba(17,24,39,.06);
+      padding-top: 1.15rem;
+      padding-bottom: 1.15rem;
     }
 
-    /* 頂端標題 */
     .app-header {
       text-align: center;
+      max-width: 820px;
+      margin: 0 auto;
     }
     .app-title {
-      font-size: 1.6rem; /* 大標 */
-      font-weight: 700;
-      color: #111827;
-      letter-spacing: 0.02em;
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      color: var(--text);
+      margin-bottom: 0.2rem;
     }
     .app-subtitle {
-      font-size: 1rem;
-      color: #4b5563;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 0.6rem;
     }
-    .app-tags {
-      margin-top: 0.5rem;
-      font-size: 0.85rem;
+    .badge-soft{
+      border: 1px solid rgba(17,24,39,.10);
+      background: #fff;
+      color: #374151;
+      font-weight: 600;
+    }
+    .badge-primary{
+      background: var(--brand);
     }
 
-    /* 步驟條 */
+    /* Stepper */
     .stepper {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 1.25rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
     .stepper-item {
       display: flex;
@@ -59,280 +86,524 @@
       min-width: 0;
     }
     .stepper-circle {
-      width: 30px;
-      height: 30px;
+      width: 34px;
+      height: 34px;
       border-radius: 999px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.95rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 800;
       border: 2px solid #cbd2e1;
       color: #6b7b93;
       background: #fff;
     }
     .stepper-label {
-      margin-left: 0.5rem;
-      font-size: 0.95rem;
+      margin-left: 0.55rem;
+      font-size: 0.98rem;
       color: #9aa5b1;
-      font-weight: 500;
+      font-weight: 600;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .stepper-line {
       height: 2px;
       background: #d8e2f2;
-      flex: 0 0 50px;
-      margin: 0 0.75rem;
+      width: 64px;
       border-radius: 999px;
     }
     .stepper-item.active .stepper-circle {
-      border-color: #2563eb;
-      background: #2563eb;
+      border-color: var(--brand);
+      background: var(--brand);
       color: #fff;
     }
     .stepper-item.active .stepper-label {
-      color: #2563eb;
+      color: var(--brand);
     }
 
-    /* 表單區 */
-    .form-section-title {
-      font-size: 1rem;
+    /* Section cards */
+    .section-card{
+      border: 1px solid rgba(17,24,39,.08);
+      border-radius: 14px;
+      background: #fff;
+      padding: 1rem 1rem 0.25rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .section-title{
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #374151;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      margin-bottom: .85rem;
+    }
+
+    label{
+      font-size: .95rem;
       font-weight: 700;
       color: #374151;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.75rem;
+      margin-bottom: .35rem;
     }
-    label {
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: #374151;
+    .form-control{
+      border-radius: 10px;
+      border-color: rgba(17,24,39,.14);
+      padding-top: .48rem;
+      padding-bottom: .48rem;
     }
-    .form-control,
-    .custom-select {
-      border-radius: 8px;
-      font-size: 0.95rem;
-      padding-top: 0.35rem;
-      padding-bottom: 0.35rem;
-    }
-    .form-row {
-      margin-bottom: 0.75rem;
-    }
-    .btn-primary {
+    .btn-primary{
       border-radius: 999px;
-      padding-left: 1.75rem;
-      padding-right: 1.75rem;
+      font-weight: 800;
+      padding-left: 1.7rem;
+      padding-right: 1.7rem;
+      background: var(--brand);
+      border-color: var(--brand);
+    }
+    .btn-primary:hover{
+      background: var(--brand-2);
+      border-color: var(--brand-2);
+    }
+    .btn-link{
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    /* Step 2 header */
+    .report-hero{
+      border: 1px solid rgba(17,24,39,.08);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .report-title{
+      font-size: 1.55rem;
+      font-weight: 900;
+      margin-bottom: .25rem;
+    }
+    .report-meta{
+      color: var(--muted);
       font-weight: 600;
     }
+    .meta-grid{
+      margin-top: .85rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .5rem .75rem;
+    }
+    @media (min-width: 768px){
+      .meta-grid{ grid-template-columns: 1fr 1fr; }
+    }
+    .kv{
+      display:flex;
+      gap:.5rem;
+      align-items:baseline;
+      padding: .45rem .6rem;
+      border: 1px dashed rgba(17,24,39,.16);
+      border-radius: 12px;
+      background: rgba(255,255,255,.8);
+    }
+    .kv .k{
+      color:#374151;
+      font-weight:900;
+      min-width: 140px;
+    }
+    .kv .v{
+      color:#111827;
+      font-weight:700;
+      word-break: break-word;
+    }
 
-    /* 結果頁標題與小標 */
-    h4 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #111827;
+    /* Media cards */
+    .asset-card{
+      border: 1px solid rgba(17,24,39,.08);
+      border-radius: 14px;
+      background:#fff;
+      overflow:hidden;
+      height: 100%;
     }
-    #step2-view h5 {
-      font-size: 1.05rem; /* 小標變明顯 */
-      font-weight: 700;
-      color: #1f2933;
-      margin-bottom: 0.5rem;
+    .asset-head{
+      padding:.75rem .85rem;
+      border-bottom: 1px solid rgba(17,24,39,.06);
+      background: #fff;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap:.5rem;
+    }
+    .asset-head h5{
+      font-size: 1.02rem;
+      font-weight: 900;
+      margin:0;
+      color:#111827;
+    }
+    .asset-body{
+      padding: .75rem .85rem .9rem .85rem;
+      background: var(--soft);
     }
 
-    /* 圖片與 PDF */
-    #step2-view img {
-      background: #f9fafb;
+    .media-box{
+      position: relative;
+      border: 1px solid rgba(17,24,39,.10);
+      border-radius: 12px;
+      background: #fff;
+      overflow:hidden;
+      min-height: 220px;
     }
-    #previewImage,
-    #aiSummaryImage {
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      max-width: 100%;
-      height: auto;
-      display: block;
-    }
-    #aiPdfFrame {
+    .media-box img{
+      display:block;
       width: 100%;
-      height: 560px; /* 給一個固定高度，但外層不裁切 */
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      background: #f9fafb;
+      height: auto;
+      background: #fff;
+    }
+    .media-loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(255,255,255,.76);
+      font-weight: 800;
+      color: #374151;
+      gap:.6rem;
+    }
+    .spinner{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(17,24,39,.18);
+      border-top-color: rgba(37,99,235,.95);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg);} }
+
+    /* PDF */
+    #aiPdfFrame{
+      width: 100%;
+      height: 640px;
+      border: 0;
+      display:block;
+      background:#fff;
     }
 
-    /* debug 區塊 */
-    #debug {
+    /* Status banner */
+    .status-banner{
+      display:none;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    /* Debug */
+    .debug-wrap{
+      border-top: 1px solid rgba(17,24,39,.06);
+      background:#fff;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+    }
+    #debug{
       max-height: 240px;
-      overflow: auto;
-      background: #f9fafb;
-      border-radius: 8px;
-      border: 1px dashed #d1d5db;
-      padding: 0.75rem;
-      line-height: 1.4;
-      font-size: 0.8rem;
+      overflow:auto;
+      background: #0b1020;
+      color: #e5e7eb;
+      border-radius: 12px;
+      padding: .9rem;
+      line-height: 1.45;
+      font-size: .78rem;
+      margin: 0;
+    }
+
+    /* Lightbox */
+    .lightbox{
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.78);
+      z-index: 9999;
+      display:none;
+      padding: 18px;
+    }
+    .lightbox-inner{
+      max-width: 1200px;
+      height: calc(100vh - 36px);
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      display:flex;
+      flex-direction: column;
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+    }
+    .lightbox-bar{
+      padding: 10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(17,24,39,.08);
+      background:#fff;
+    }
+    .lightbox-title{
+      font-weight: 900;
+      color:#111827;
+      margin:0;
+      font-size: .98rem;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .lightbox-close{
+      border: 0;
+      background: #f3f4f6;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 20px;
+      line-height: 36px;
+      font-weight: 900;
+      color:#111827;
+      cursor: pointer;
+    }
+    .lightbox-content{
+      flex: 1;
+      background:#0b1020;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:auto;
+      padding: 10px;
+    }
+    .lightbox-content img{
+      max-width: 100%;
+      max-height: 100%;
+      height: auto;
+      background:#fff;
+      border-radius: 12px;
+    }
+    .lightbox-content iframe{
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background:#fff;
+      border-radius: 12px;
     }
   </style>
 </head>
+
 <body>
-<div class="container py-4">
-  <div class="app-card card shadow-sm mx-auto" style="max-width: 1040px;">
-    <div class="card-header bg-white">
-      <div class="app-header">
-        <div class="app-title">AI-assisted Laryngeal Image Parameter Calculator</div>
-        <div class="app-subtitle">Changhua Christian Hospital · SMART on FHIR Demo</div>
-        <div class="app-tags">
-          <span class="badge badge-pill badge-primary">Demo</span>
-          <span class="badge badge-pill badge-light border ml-1">Binary</span>
-          <span class="badge badge-pill badge-light border ml-1">DocumentReference</span>
+  <div class="container py-4">
+    <div class="app-card card shadow-sm mx-auto" style="max-width: 1120px;">
+      <div class="card-header">
+        <div class="app-header">
+          <div class="app-title">AI-assisted Laryngeal Image Parameter Calculator</div>
+          <div class="app-subtitle">Changhua Christian Hospital · SMART on FHIR Demo</div>
+          <div class="app-tags">
+            <span class="badge badge-pill badge-primary">Demo</span>
+            <span class="badge badge-pill badge-soft ml-1">Binary</span>
+            <span class="badge badge-pill badge-soft ml-1">DocumentReference</span>
+          </div>
+        </div>
+
+        <div class="stepper">
+          <div class="stepper-item active" id="step1-indicator">
+            <div class="stepper-circle">1</div>
+            <div class="stepper-label">Patient &amp; Image</div>
+          </div>
+          <div class="stepper-line"></div>
+          <div class="stepper-item" id="step2-indicator">
+            <div class="stepper-circle">2</div>
+            <div class="stepper-label">AI Analysis Report</div>
+          </div>
         </div>
       </div>
 
-      <!-- 步驟條 -->
-      <div class="stepper">
-        <div class="stepper-item active" id="step1-indicator">
-          <div class="stepper-circle">1</div>
-          <div class="stepper-label">Patient &amp; Image</div>
-        </div>
-        <div class="stepper-line"></div>
-        <div class="stepper-item" id="step2-indicator">
-          <div class="stepper-circle">2</div>
-          <div class="stepper-label">AI Analysis Report</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card-body">
-      <!-- Step 1：輸入介面 -->
-      <div id="step1-view">
-        <div class="alert alert-info py-2 mb-3" id="loadStatus">
-          Loading demo AI reports from THAS...
-        </div>
-
-        <form id="metaForm">
-          <div class="form-section-title">Patient information</div>
-          <div class="form-row">
-            <div class="form-group col-md-4">
-              <label for="patientId">Patient ID</label>
-              <input type="text" class="form-control" id="patientId"
-                     placeholder="Enter patient ID" required>
-            </div>
-            <div class="form-group col-md-8">
-              <label for="patientName">Patient Name</label>
-              <input type="text" class="form-control" id="patientName"
-                     placeholder="Enter patient name" required>
-            </div>
+      <div class="card-body pt-4">
+        <!-- Step 1 -->
+        <div id="step1-view">
+          <div class="alert alert-info py-2 mb-3" id="loadStatus">
+            Loading demo AI reports from THAS...
           </div>
 
-          <div class="form-row">
-            <div class="form-group col-md-4">
-              <label for="patientSex">Patient Sex</label>
-              <select id="patientSex" class="form-control" required>
-                <option value="">Select sex</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div class="form-group col-md-4">
-              <label for="patientAge">Patient Age</label>
-              <input type="number" class="form-control" id="patientAge"
-                     placeholder="Age" min="0" max="120" required>
-            </div>
-            <div class="form-group col-md-4">
-              <label for="examDate">Examination Date</label>
-              <input type="date" class="form-control" id="examDate" required>
-            </div>
-          </div>
+          <form id="metaForm">
+            <div class="section-card">
+              <div class="section-title">Patient information</div>
 
-          <hr>
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label for="patientId">Patient ID</label>
+                  <input type="text" class="form-control" id="patientId"
+                         placeholder="Enter patient ID" required>
+                </div>
+                <div class="form-group col-md-8">
+                  <label for="patientName">Patient Name</label>
+                  <input type="text" class="form-control" id="patientName"
+                         placeholder="Enter patient name" required>
+                </div>
+              </div>
 
-          <div class="form-section-title">AI model &amp; test image</div>
-          <div class="form-row">
-            <div class="form-group col-md-6">
-              <label for="modelSelect">Select Model</label>
-              <select id="modelSelect" class="form-control" required disabled>
-                <option value="">Loading models...</option>
-              </select>
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label for="patientSex">Patient Sex</label>
+                  <select id="patientSex" class="form-control" required>
+                    <option value="">Select sex</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="patientAge">Patient Age</label>
+                  <input type="number" class="form-control" id="patientAge"
+                         placeholder="Age" min="0" max="120" required>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="examDate">Examination Date</label>
+                  <input type="date" class="form-control" id="examDate" required>
+                </div>
+              </div>
             </div>
-            <div class="form-group col-md-6">
-              <label for="imageSelect">Select Test Image</label>
-              <select id="imageSelect" class="form-control" required disabled>
-                <option value="">Select a model first</option>
-              </select>
-            </div>
-          </div>
 
-          <div class="d-flex justify-content-end mt-3">
-            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-              Submit
+            <div class="section-card">
+              <div class="section-title">AI model &amp; test image</div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="modelSelect">Select Model</label>
+                  <select id="modelSelect" class="form-control" required disabled>
+                    <option value="">Loading models...</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="imageSelect">Select Test Image</label>
+                  <select id="imageSelect" class="form-control" required disabled>
+                    <option value="">Select a model first</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end mt-2 pb-2">
+                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                  Submit
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="step2-view" style="display:none;">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <button id="backBtn" class="btn btn-link px-0">
+              &laquo; Back to input
             </button>
+
+            <div class="d-flex align-items-center" style="gap:.5rem;">
+              <a id="aiPdfDownload" class="btn btn-sm btn-outline-primary" href="#" target="_blank" style="display:none;">
+                Download PDF
+              </a>
+              <button id="aiPdfOpenBtn" class="btn btn-sm btn-outline-secondary" type="button" disabled>
+                Open PDF
+              </button>
+            </div>
           </div>
-        </form>
-      </div>
 
-      <!-- Step 2：結果畫面 -->
-      <div id="step2-view" style="display:none;">
-        <button id="backBtn" class="btn btn-link px-0 mb-3">
-          &laquo; Back to input
-        </button>
+          <div id="step2Status" class="alert status-banner" role="alert"></div>
 
-        <h4 class="mb-3">AI Analysis Report</h4>
+          <div class="report-hero">
+            <div class="report-title">AI Analysis Report</div>
+            <div class="report-meta">Generated from THAS FHIR R4 DocumentReference + Binary</div>
 
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Patient &amp; Examination Info</h5>
-            <div class="row">
-              <div class="col-md-6 mb-2">
-                <ul class="list-unstyled mb-0">
-                  <li><strong>Patient Name:</strong> <span id="infoName"></span></li>
-                  <li><strong>Sex / Age:</strong> <span id="infoSexAge"></span></li>
-                </ul>
+            <div class="meta-grid">
+              <div class="kv"><div class="k">Patient Name</div><div class="v" id="infoName"></div></div>
+              <div class="kv"><div class="k">Sex / Age</div><div class="v" id="infoSexAge"></div></div>
+              <div class="kv"><div class="k">Examination Date</div><div class="v" id="infoExamDate"></div></div>
+              <div class="kv"><div class="k">Model / Image</div><div class="v"><span id="infoModel"></span> · <span id="infoImage"></span></div></div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6 mb-3">
+              <div class="asset-card">
+                <div class="asset-head">
+                  <h5>Original Laryngeal Image</h5>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" id="openRawBtn" disabled>View</button>
+                </div>
+                <div class="asset-body">
+                  <div class="media-box">
+                    <div class="media-loading" id="rawLoading">
+                      <div class="spinner"></div> Loading...
+                    </div>
+                    <img id="previewImage" alt="Laryngeal image" class="img-fluid">
+                  </div>
+                  <small class="text-muted d-block mt-2">Tip: click “View” for fullscreen preview.</small>
+                </div>
               </div>
-              <div class="col-md-6 mb-2">
-                <ul class="list-unstyled mb-0">
-                  <li><strong>Examination Date:</strong> <span id="infoExamDate"></span></li>
-                  <li><strong>Model / Image:</strong>
-                    <span id="infoModel"></span> · <span id="infoImage"></span>
-                  </li>
-                </ul>
+            </div>
+
+            <div class="col-lg-6 mb-3">
+              <div class="asset-card">
+                <div class="asset-head">
+                  <h5>AI Summary Image</h5>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" id="openPngBtn" disabled>View</button>
+                </div>
+                <div class="asset-body">
+                  <div class="media-box">
+                    <div class="media-loading" id="pngLoading">
+                      <div class="spinner"></div> Loading...
+                    </div>
+                    <img id="aiSummaryImage" alt="AI summary" class="img-fluid">
+                  </div>
+                  <small class="text-muted d-block mt-2">Tip: click “View” for fullscreen preview.</small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <h5>Original Laryngeal Image</h5>
-            <img id="previewImage"
-                 alt="Laryngeal image"
-                 class="img-fluid">
+          <div class="asset-card mt-1 mb-2">
+            <div class="asset-head">
+              <h5>AI Report (PDF)</h5>
+              <span class="text-muted small">Preview</span>
+            </div>
+            <div class="asset-body">
+              <div class="media-box" style="min-height: 360px;">
+                <div class="media-loading" id="pdfLoading">
+                  <div class="spinner"></div> Loading...
+                </div>
+                <iframe id="aiPdfFrame" title="AI PDF report"></iframe>
+              </div>
+              <small class="text-muted d-block mt-2">
+                如果內嵌預覽在某些環境顯示不完整，請用右上角的 Download / Open PDF。
+              </small>
+            </div>
           </div>
 
-          <div class="col-md-6 mb-3">
-            <h5>AI Summary Image</h5>
-            <img id="aiSummaryImage"
-                 alt="AI summary"
-                 class="img-fluid">
-          </div>
-        </div>
-
-        <div class="mt-3 mb-2">
-          <h5>AI Report (PDF)</h5>
-          <iframe id="aiPdfFrame"
-                  title="AI PDF report"></iframe>
         </div>
       </div>
-    </div>
 
-    <div class="card-footer bg-white">
-      <small class="text-muted d-block mb-1">Debug</small>
-      <pre id="debug" class="small text-monospace text-muted mb-0"></pre>
+      <div class="debug-wrap px-3 pt-3 pb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <small class="text-muted font-weight-bold">Debug</small>
+          <button id="debugToggle" class="btn btn-sm btn-outline-secondary" type="button">
+            Show
+          </button>
+        </div>
+        <div id="debugBody" style="display:none;">
+          <pre id="debug"></pre>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- SMART JS Client -->
-<script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
-<script src="app.js"></script>
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox-inner">
+      <div class="lightbox-bar">
+        <div class="lightbox-title" id="lightboxTitle">Preview</div>
+        <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+      </div>
+      <div class="lightbox-content" id="lightboxContent"></div>
+    </div>
+  </div>
+
+  <!-- SMART JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
+
