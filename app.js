@@ -1,5 +1,3 @@
-// app.js
-
 // 與 Python 一致的系統常數
 const CATEGORY_SYSTEM = "https://cch.org.tw/fhir/CodeSystem/larynx-demo-category";
 const CATEGORY_CODE = "larynx-ai-report";
@@ -8,7 +6,66 @@ const MODEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/model";
 const IMAGE_LABEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/image-label";
 const RAW_BINARY_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/raw-binary-id";
 
+// ------------------------------------------------------------
+// UI helpers
+// ------------------------------------------------------------
+function showEl(el, yes, displayStyle) {
+  if (!el) return;
+  const d = displayStyle || "block";
+  el.style.display = yes ? d : "none";
+}
+
+function setStatusBanner(el, type, msg) {
+  if (!el) return;
+  if (!msg) {
+    el.className = "alert status-banner";
+    el.textContent = "";
+    showEl(el, false, "block");
+    return;
+  }
+  el.className = "alert status-banner alert-" + type;
+  el.textContent = msg;
+  showEl(el, true, "block");
+}
+
+function setLoading(el, yes) {
+  if (!el) return;
+  el.style.display = yes ? "flex" : "none";
+}
+
+function safeText(el, value) {
+  if (!el) return;
+  el.textContent = value == null ? "" : String(value);
+}
+
+function openLightbox(title, node) {
+  const lb = document.getElementById("lightbox");
+  const lbTitle = document.getElementById("lightboxTitle");
+  const lbContent = document.getElementById("lightboxContent");
+  if (!lb || !lbTitle || !lbContent) return;
+
+  lbTitle.textContent = title || "Preview";
+  lbContent.innerHTML = "";
+  if (node) lbContent.appendChild(node);
+
+  lb.setAttribute("aria-hidden", "false");
+  lb.style.display = "block";
+  document.body.style.overflow = "hidden";
+}
+
+function closeLightbox() {
+  const lb = document.getElementById("lightbox");
+  const lbContent = document.getElementById("lightboxContent");
+  if (!lb || !lbContent) return;
+  lbContent.innerHTML = "";
+  lb.setAttribute("aria-hidden", "true");
+  lb.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+// ------------------------------------------------------------
 // 切換 Step 1 / Step 2 畫面，同步更新步驟條
+// ------------------------------------------------------------
 function showStep(step) {
   const step1View = document.getElementById("step1-view");
   const step2View = document.getElementById("step2-view");
@@ -68,7 +125,42 @@ FHIR.oauth2
     const debugEl = document.getElementById("debug");
     const backBtn = document.getElementById("backBtn");
 
+    // Step2 controls
+    const step2Status = document.getElementById("step2Status");
+    const rawLoading = document.getElementById("rawLoading");
+    const pngLoading = document.getElementById("pngLoading");
+    const pdfLoading = document.getElementById("pdfLoading");
+    const openRawBtn = document.getElementById("openRawBtn");
+    const openPngBtn = document.getElementById("openPngBtn");
+    const aiPdfOpenBtn = document.getElementById("aiPdfOpenBtn");
+    const pdfLink = document.getElementById("aiPdfDownload");
+
+    // Debug toggle
+    const debugToggle = document.getElementById("debugToggle");
+    const debugBody = document.getElementById("debugBody");
+    if (debugToggle && debugBody) {
+      debugToggle.addEventListener("click", () => {
+        const show = debugBody.style.display === "none";
+        debugBody.style.display = show ? "block" : "none";
+        debugToggle.textContent = show ? "Hide" : "Show";
+      });
+    }
+
+    // Lightbox close
+    const lbClose = document.getElementById("lightboxClose");
+    const lb = document.getElementById("lightbox");
+    if (lbClose) lbClose.addEventListener("click", closeLightbox);
+    if (lb) {
+      lb.addEventListener("click", (e) => {
+        if (e.target === lb) closeLightbox();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLightbox();
+      });
+    }
+
     showStep(1);
+    setStatusBanner(step2Status, "info", "");
 
     // === 1. 從 THAS 搜出所有 demo 用的 DocumentReference ===
     if (loadStatus) {
@@ -120,16 +212,18 @@ FHIR.oauth2
             }
           });
 
-          if (!docIndex[model]) {
-            docIndex[model] = {};
+          if (!docIndex[model]) docIndex[model] = {};
+
+          // 同一個 key 已存在就不覆蓋（避免不小心被後面的資料蓋掉）
+          if (!docIndex[model][imageLabel]) {
+            docIndex[model][imageLabel] = {
+              model,
+              imageLabel,
+              rawBinaryId,
+              pngBinaryId,
+              pdfBinaryId
+            };
           }
-          docIndex[model][imageLabel] = {
-            model,
-            imageLabel,
-            rawBinaryId,
-            pngBinaryId,
-            pdfBinaryId
-          };
           models.add(model);
         });
 
@@ -182,7 +276,7 @@ FHIR.oauth2
           opt.textContent = "Select a model first";
           imageSelect.appendChild(opt);
           imageSelect.disabled = true;
-          submitBtn.disabled = true;
+          if (submitBtn) submitBtn.disabled = true;
           return;
         }
 
@@ -200,7 +294,7 @@ FHIR.oauth2
         });
 
         imageSelect.disabled = false;
-        submitBtn.disabled = false;
+        if (submitBtn) submitBtn.disabled = false;
       });
     }
 
@@ -209,11 +303,13 @@ FHIR.oauth2
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
+        setStatusBanner(step2Status, "info", ""); // 清空 banner
+
         const model = modelSelect.value;
         const imageLabel = imageSelect.value;
 
         if (!model || !imageLabel || !docIndex[model] || !docIndex[model][imageLabel]) {
-          alert("Selected combination has no demo report. Please re-select.");
+          setStatusBanner(step2Status, "warning", "Selected combination has no demo report. Please re-select.");
           return;
         }
 
@@ -236,53 +332,125 @@ FHIR.oauth2
 
         showStep(2);
 
-        document.getElementById("infoName").innerText = payload.patientName;
-        document.getElementById("infoSexAge").innerText =
-          payload.patientSex + " / " + payload.patientAge;
-        document.getElementById("infoExamDate").innerText = payload.examDate;
-        document.getElementById("infoModel").innerText = payload.model;
-        document.getElementById("infoImage").innerText = payload.imageLabel;
+        safeText(document.getElementById("infoName"), payload.patientName);
+        safeText(document.getElementById("infoSexAge"), payload.patientSex + " / " + payload.patientAge);
+        safeText(document.getElementById("infoExamDate"), payload.examDate);
+        safeText(document.getElementById("infoModel"), payload.model);
+        safeText(document.getElementById("infoImage"), payload.imageLabel);
 
-        document.getElementById("previewImage").src = "";
-        document.getElementById("aiSummaryImage").src = "";
-        document.getElementById("aiPdfFrame").src = "";
-        const pdfLink = document.getElementById("aiPdfDownload");
+        const previewImage = document.getElementById("previewImage");
+        const aiSummaryImage = document.getElementById("aiSummaryImage");
+        const aiPdfFrame = document.getElementById("aiPdfFrame");
+
+        if (previewImage) previewImage.src = "";
+        if (aiSummaryImage) aiSummaryImage.src = "";
+        if (aiPdfFrame) aiPdfFrame.src = "";
+
         if (pdfLink) {
           pdfLink.style.display = "none";
           pdfLink.href = "#";
         }
+        if (aiPdfOpenBtn) aiPdfOpenBtn.disabled = true;
+        if (openRawBtn) openRawBtn.disabled = true;
+        if (openPngBtn) openPngBtn.disabled = true;
+
+        // show loading overlays
+        setLoading(rawLoading, true);
+        setLoading(pngLoading, true);
+        setLoading(pdfLoading, true);
+
+        let rawUrl = null;
+        let pngUrl = null;
+        let pdfUrl = null;
 
         try {
           // 1) 原始 BMP
           if (mapping.rawBinaryId) {
-            const rawUrl = await fetchBinaryAsDataUrl(client, mapping.rawBinaryId);
-            if (rawUrl) {
-              document.getElementById("previewImage").src = rawUrl;
+            rawUrl = await fetchBinaryAsDataUrl(client, mapping.rawBinaryId);
+            if (rawUrl && previewImage) {
+              previewImage.src = rawUrl;
+              if (openRawBtn) openRawBtn.disabled = false;
             }
-          }
-
-          // 2) AI summary PNG
-          if (mapping.pngBinaryId) {
-            const pngUrl = await fetchBinaryAsDataUrl(client, mapping.pngBinaryId);
-            if (pngUrl) {
-              document.getElementById("aiSummaryImage").src = pngUrl;
-            }
-          }
-
-          // 3) AI report PDF
-          if (mapping.pdfBinaryId) {
-            const pdfUrl = await fetchBinaryAsDataUrl(client, mapping.pdfBinaryId);
-            if (pdfUrl) {
-              document.getElementById("aiPdfFrame").src = pdfUrl;
-              if (pdfLink) {
-                pdfLink.href = pdfUrl;
-                pdfLink.style.display = "inline";
-              }
-            }
+          } else {
+            setStatusBanner(step2Status, "warning", "This demo record has no RAW binary id (BMP).");
           }
         } catch (err) {
           console.error(err);
-          alert("Error loading images/reports from THAS. See console.");
+          setStatusBanner(step2Status, "danger", "Error loading RAW image (BMP). See console.");
+        } finally {
+          setLoading(rawLoading, false);
+        }
+
+        try {
+          // 2) AI summary PNG
+          if (mapping.pngBinaryId) {
+            pngUrl = await fetchBinaryAsDataUrl(client, mapping.pngBinaryId);
+            if (pngUrl && aiSummaryImage) {
+              aiSummaryImage.src = pngUrl;
+              if (openPngBtn) openPngBtn.disabled = false;
+            }
+          } else {
+            setStatusBanner(step2Status, "warning", "This demo record has no AI summary PNG.");
+          }
+        } catch (err) {
+          console.error(err);
+          setStatusBanner(step2Status, "danger", "Error loading AI summary image (PNG). See console.");
+        } finally {
+          setLoading(pngLoading, false);
+        }
+
+        try {
+          // 3) AI report PDF
+          if (mapping.pdfBinaryId) {
+            pdfUrl = await fetchBinaryAsDataUrl(client, mapping.pdfBinaryId);
+            if (pdfUrl && aiPdfFrame) {
+              aiPdfFrame.src = pdfUrl;
+
+              if (pdfLink) {
+                pdfLink.href = pdfUrl;
+                pdfLink.style.display = "inline-flex";
+              }
+              if (aiPdfOpenBtn) {
+                aiPdfOpenBtn.disabled = false;
+              }
+            }
+          } else {
+            setStatusBanner(step2Status, "warning", "This demo record has no AI report PDF.");
+          }
+        } catch (err) {
+          console.error(err);
+          setStatusBanner(step2Status, "danger", "Error loading AI report (PDF). See console.");
+        } finally {
+          setLoading(pdfLoading, false);
+        }
+
+        // bind view buttons (lightbox)
+        if (openRawBtn) {
+          openRawBtn.onclick = () => {
+            if (!rawUrl) return;
+            const img = document.createElement("img");
+            img.src = rawUrl;
+            img.alt = "Original Laryngeal Image";
+            openLightbox("Original Laryngeal Image", img);
+          };
+        }
+        if (openPngBtn) {
+          openPngBtn.onclick = () => {
+            if (!pngUrl) return;
+            const img = document.createElement("img");
+            img.src = pngUrl;
+            img.alt = "AI Summary Image";
+            openLightbox("AI Summary Image", img);
+          };
+        }
+        if (aiPdfOpenBtn) {
+          aiPdfOpenBtn.onclick = () => {
+            if (!pdfUrl) return;
+            const iframe = document.createElement("iframe");
+            iframe.src = pdfUrl;
+            iframe.title = "AI Report (PDF)";
+            openLightbox("AI Report (PDF)", iframe);
+          };
         }
       });
     }
@@ -291,6 +459,7 @@ FHIR.oauth2
     if (backBtn) {
       backBtn.addEventListener("click", function () {
         showStep(1);
+        setStatusBanner(step2Status, "info", "");
       });
     }
   })
@@ -298,4 +467,3 @@ FHIR.oauth2
     console.error(error);
     alert("SMART authorization failed. See console.");
   });
-
