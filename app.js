@@ -120,7 +120,6 @@ function mmForA4() {
 }
 
 function pxToMm(px, dpi = 96) {
-  // 1 inch = 25.4 mm
   return (px * 25.4) / dpi;
 }
 
@@ -145,7 +144,6 @@ async function renderPdfPagesToJsPdf(pdfBytes, jsPdfDoc) {
   const pdfjsLib = (window["pdfjs-dist/build/pdf"] || window.pdfjsLib);
   if (!pdfjsLib) throw new Error("pdfjsLib not loaded");
 
-  // worker
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
@@ -155,7 +153,6 @@ async function renderPdfPagesToJsPdf(pdfBytes, jsPdfDoc) {
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     const page = await pdf.getPage(pageNum);
 
-    // 以 A4 寬度渲染（適度 scale）
     const viewport = page.getViewport({ scale: 2.0 });
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -167,7 +164,6 @@ async function renderPdfPagesToJsPdf(pdfBytes, jsPdfDoc) {
     const imgData = canvas.toDataURL("image/jpeg", 0.92);
 
     jsPdfDoc.addPage("a4", "p");
-    // 直接塞滿 A4（保留小邊界）
     const box = fitToA4(canvas, 6);
     jsPdfDoc.addImage(imgData, "JPEG", box.x, box.y, box.w, box.h);
   }
@@ -201,11 +197,11 @@ FHIR.oauth2
     let docIndex = {}; // docIndex[model][imageLabel] = { rawBinaryId, pngBinaryId, pdfBinaryId }
     let models = new Set();
 
-    // keep current AI PDF (bytes + blob url)
+    // current AI PDF (bytes + blob url)
     let currentAiPdfBytes = null;
     let currentAiPdfBlobUrl = null;
 
-    // keep generated combined report blob url (for modal download)
+    // generated combined report blob url (for modal preview + download)
     let currentCombinedBlobUrl = null;
 
     // modal events
@@ -213,7 +209,7 @@ FHIR.oauth2
       if (previewFrame) previewFrame.removeAttribute("src");
       showReportModal(false);
     });
-    // click outside to close
+
     const modal = document.getElementById("reportModal");
     if (modal) {
       modal.addEventListener("click", (e) => {
@@ -240,7 +236,8 @@ FHIR.oauth2
     }
 
     async function buildCombinedPdfPreview() {
-      if (!document.getElementById("step2-view") || document.getElementById("step2-view").style.display === "none") {
+      const step2 = document.getElementById("step2-view");
+      if (!step2 || step2.style.display === "none") {
         alert("請先 Submit 產生 AI Analysis Report。");
         return;
       }
@@ -249,26 +246,23 @@ FHIR.oauth2
         return;
       }
 
-      // 清掉舊的 combined blob
+      // clear old combined blob
       if (currentCombinedBlobUrl) {
         URL.revokeObjectURL(currentCombinedBlobUrl);
         currentCombinedBlobUrl = null;
       }
 
-      // jsPDF
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "p" });
 
-      // -------- Page 1: 截圖 AI Analysis Report（不抓 iframe 內容）
-      // clone step2-view -> 移除 iframe，替換提示
-      const step2 = document.getElementById("step2-view");
+      // --- Page 1: screenshot of Step2 (exclude iframe content)
       const clone = step2.cloneNode(true);
 
-      // 把下載按鈕列移除（避免出現在輸出 PDF）
+      // remove the top bar (Back/Download) in exported pdf
       const topBar = clone.querySelector(".d-flex.align-items-center.justify-content-between.mb-2");
       if (topBar) topBar.remove();
 
-      // iframe 不能被 html2canvas 正確截圖，移除並用提示文字取代
+      // iframe can't be captured reliably; remove it and show hint text
       const iframe = clone.querySelector("#aiPdfFrame");
       if (iframe) iframe.remove();
 
@@ -278,7 +272,7 @@ FHIR.oauth2
         pdfPh.textContent = "AI Report (PDF) 已附在下一頁（完整頁面）。";
       }
 
-      // 放到 offscreen
+      // put clone offscreen for capture
       const off = document.createElement("div");
       off.style.position = "fixed";
       off.style.left = "-10000px";
@@ -286,41 +280,37 @@ FHIR.oauth2
       off.style.width = "1120px";
       off.style.background = "#fff";
       off.style.padding = "16px";
-      off.style.borderRadius = "0";
       off.appendChild(clone);
       document.body.appendChild(off);
 
-      // screenshot
       const canvas = await html2canvas(off, {
         backgroundColor: "#ffffff",
         scale: 2,
         useCORS: true
       });
 
-      // cleanup
       document.body.removeChild(off);
 
-      // add to jsPDF
       const imgData = canvas.toDataURL("image/jpeg", 0.92);
       const box = fitToA4(canvas, 8);
       doc.addImage(imgData, "JPEG", box.x, box.y, box.w, box.h);
 
-      // -------- Next pages: append the original AI PDF pages (full, not cropped)
+      // --- Following pages: append AI PDF pages in full
       await renderPdfPagesToJsPdf(currentAiPdfBytes, doc);
 
-      // output blob url
       const blob = doc.output("blob");
       const url = URL.createObjectURL(blob);
       currentCombinedBlobUrl = url;
 
-      // preview in modal
-      if (modalTitle) modalTitle.textContent = "Preview: AI Analysis Report (Page 1) + AI Report(PDF) (Following Pages)";
+      if (modalTitle) {
+        modalTitle.textContent =
+          "Preview: AI Analysis Report (Page 1) + AI Report(PDF) (Following Pages)";
+      }
       if (previewFrame) previewFrame.src = url;
 
       showReportModal(true);
     }
 
-    // bind Download PDF (preview)
     if (downloadReportBtn) {
       downloadReportBtn.addEventListener("click", async () => {
         downloadReportBtn.disabled = true;
@@ -480,18 +470,16 @@ FHIR.oauth2
         setText("infoModel", payload.model);
         setText("infoImage", payload.imageLabel);
 
-        // reset visuals
         clearImage("previewImage", "rawPlaceholder");
         clearImage("aiSummaryImage", "pngPlaceholder");
         clearFrame("aiPdfFrame", "pdfPlaceholder");
 
-        // reset AI PDF open button
         if (pdfOpenBtn) {
           pdfOpenBtn.style.display = "none";
           pdfOpenBtn.href = "#";
         }
 
-        // release old AI PDF blob url
+        // release old AI pdf url
         if (currentAiPdfBlobUrl) {
           URL.revokeObjectURL(currentAiPdfBlobUrl);
           currentAiPdfBlobUrl = null;
@@ -499,7 +487,7 @@ FHIR.oauth2
         currentAiPdfBytes = null;
 
         try {
-          // 1) RAW
+          // RAW
           if (mapping.rawBinaryId) {
             const rawBin = await fetchBinaryResource(client, mapping.rawBinaryId);
             if (rawBin && rawBin.data) {
@@ -509,7 +497,7 @@ FHIR.oauth2
             }
           }
 
-          // 2) PNG
+          // PNG
           if (mapping.pngBinaryId) {
             const pngBin = await fetchBinaryResource(client, mapping.pngBinaryId);
             if (pngBin && pngBin.data) {
@@ -519,7 +507,7 @@ FHIR.oauth2
             }
           }
 
-          // 3) PDF (bytes + blob url)
+          // PDF
           if (mapping.pdfBinaryId) {
             const pdfBin = await fetchBinaryResource(client, mapping.pdfBinaryId);
             if (pdfBin && pdfBin.data) {
@@ -556,3 +544,4 @@ FHIR.oauth2
     console.error(error);
     alert("SMART authorization failed. See console.");
   });
+
