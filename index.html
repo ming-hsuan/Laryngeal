@@ -193,17 +193,22 @@
       padding-right: 1.8rem;
       background: var(--brand);
       border-color: var(--brand);
+      color: #fff !important;          
     }
-    .btn-primary:hover{
+    
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active,
+    .btn-primary.active{
       background: var(--brand2);
       border-color: var(--brand2);
+      color: #fff !important;          
     }
-    .btn-link{
-      font-weight: 800;
-      color: var(--brand);
+    
+    .btn-primary:focus{
+      box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, .25);
     }
 
-    /* ✅✅ Step2 頂部列：強制同一排、左右貼邊（不靠 Bootstrap） */
     .cch-topbar{
       display: flex !important;
       align-items: center !important;
@@ -218,7 +223,7 @@
       flex: 0 0 auto;
     }
     .cch-topbar #downloadReportBtn{
-      margin-left: auto !important; /* 再加保險：永遠推到最右 */
+      margin-left: auto !important; 
     }
 
     /* Step 2 */
