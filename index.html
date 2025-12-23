@@ -149,46 +149,41 @@
       margin-bottom: .95rem;
     }
 
-    /* ✅ 你要的「Patient ID    [框]」：label 與 input 同一行 + 增加水平距離 */
+    /* ✅ 讓 Patient ID 與框同一行，並「字尾 → 框線」加大距離 */
     .section-card .form-group{
-      margin-bottom: 1.15rem;           /* 你說行距覺得好：保留 */
-      display: flex;                   /* ✅ 變成同一行 */
+      margin-bottom: 1.15rem;     /* 保留你喜歡的行距 */
+      display: flex;
       align-items: center;
-      gap: 16px;                       /* ✅ 核心：字尾 → 框線 的水平距離加寬 */
+      gap: 18px;                 /* ✅ 核心：文字尾端 → 框線（水平距離） */
     }
     .section-card .form-group label{
-      margin: 0;                       /* ✅ 不要上下 margin，避免干擾 */
+      margin: 0;
       font-weight: 800;
       color:#374151;
       font-size: .95rem;
       white-space: nowrap;
-      min-width: 132px;                /* ✅ 讓 label 有固定寬度（看起來更像表單） */
+      min-width: 132px;
     }
     .section-card .form-group .form-control{
       flex: 1 1 auto;
-      width: auto;                     /* ✅ 避免被 bootstrap 固定寬度影響 */
+      width: auto;
       border-radius: 10px;
       border-color: rgba(17,24,39,.14);
       padding-top: .5rem;
       padding-bottom: .5rem;
 
-      padding-left: .82rem;            /* ✅ 框線 → 文字（123）只多一點點 */
+      padding-left: .82rem;      /* ✅ 框線 → 123（內距）只多一點點 */
       padding-right: .82rem;
     }
 
-    /* 小螢幕：回到上下排列（避免太擠） */
     @media (max-width: 575.98px){
       .section-card .form-group{
         flex-direction: column;
         align-items: stretch;
         gap: 8px;
       }
-      .section-card .form-group label{
-        min-width: 0;
-      }
-      .section-card .form-group .form-control{
-        width: 100%;
-      }
+      .section-card .form-group label{ min-width: 0; }
+      .section-card .form-group .form-control{ width: 100%; }
     }
 
     .btn-primary{
@@ -206,6 +201,24 @@
     .btn-link{
       font-weight: 800;
       color: var(--brand);
+    }
+
+    /* ✅✅ Step2 頂部列：強制同一排、左右貼邊（不靠 Bootstrap） */
+    .cch-topbar{
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      width: 100% !important;
+      flex-wrap: nowrap !important;
+      margin-bottom: .5rem;
+    }
+    .cch-topbar #backBtn,
+    .cch-topbar #downloadReportBtn{
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    .cch-topbar #downloadReportBtn{
+      margin-left: auto !important; /* 再加保險：永遠推到最右 */
     }
 
     /* Step 2 */
@@ -247,7 +260,6 @@
     .kv .k{ font-weight: 900; min-width: 140px; color:#374151; }
     .kv .v{ font-weight: 700; color:#111827; word-break: break-word; }
 
-    /* Asset cards */
     .asset-card{
       border: 1px solid rgba(17,24,39,.08);
       border-radius: 14px;
@@ -472,10 +484,9 @@
 
           <!-- Step 2 -->
           <div id="step2-view" style="display:none;">
-            <!-- ✅ Download PDF 固定在最右邊（不是跟 Back 貼一起） -->
-            <div class="d-flex align-items-center w-100 mb-2">
+            <!-- ✅ 左 Back、右 Download，且 Download 貼齊整排最右邊 -->
+            <div class="cch-topbar">
               <button id="backBtn" class="btn btn-link px-0">&laquo; Back to input</button>
-              <div class="flex-grow-1"></div>
               <button id="downloadReportBtn" class="btn btn-sm btn-outline-primary" type="button">
                 Download PDF
               </button>
