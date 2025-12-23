@@ -1,6 +1,5 @@
 // app.js
 
-// 與 Python 一致的系統常數
 const CATEGORY_SYSTEM = "https://cch.org.tw/fhir/CodeSystem/larynx-demo-category";
 const CATEGORY_CODE = "larynx-ai-report";
 
@@ -8,9 +7,7 @@ const MODEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/model";
 const IMAGE_LABEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/image-label";
 const RAW_BINARY_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/raw-binary-id";
 
-// ------------------------------------------------------------
-// UI helpers
-// ------------------------------------------------------------
+// ------------------------ UI helpers ------------------------
 function showStep(step) {
   const step1View = document.getElementById("step1-view");
   const step2View = document.getElementById("step2-view");
@@ -41,7 +38,7 @@ function clearImage(imgId, placeholderId) {
   const img = document.getElementById(imgId);
   const ph = document.getElementById(placeholderId);
   if (img) {
-    img.removeAttribute("src");   // ✅ 不用 src=""，避免破圖 X
+    img.removeAttribute("src");  // ✅ 不用 src=""，避免破圖 X
     img.style.display = "none";
   }
   if (ph) ph.style.display = "block";
@@ -67,19 +64,17 @@ function clearFrame(frameId, placeholderId) {
   if (ph) ph.style.display = "block";
 }
 
-function setFrame(frameId, placeholderId, dataUrl) {
+function setFrame(frameId, placeholderId, url) {
   const fr = document.getElementById(frameId);
   const ph = document.getElementById(placeholderId);
   if (ph) ph.style.display = "none";
-  if (fr && dataUrl) {
-    fr.src = dataUrl;
+  if (fr && url) {
+    fr.src = url;
     fr.style.display = "block";
   }
 }
 
-// ------------------------------------------------------------
-// FHIR helpers
-// ------------------------------------------------------------
+// ------------------------ FHIR helpers ------------------------
 function getIdentifierValue(resource, system) {
   const ids = resource.identifier || [];
   const found = ids.find((id) => id.system === system);
@@ -92,21 +87,30 @@ function extractBinaryIdFromUrl(url) {
   return parts[parts.length - 1];
 }
 
-async function fetchBinaryAsDataUrl(client, binaryId) {
-  const binary = await client.request("Binary/" + binaryId + "?_format=json", {
+async function fetchBinaryResource(client, binaryId) {
+  return await client.request("Binary/" + binaryId + "?_format=json", {
     headers: { Accept: "application/fhir+json" }
   });
-  if (!binary || !binary.data) {
-    console.warn("Binary/" + binaryId + " has no data");
-    return null;
-  }
-  const ct = binary.contentType || "application/octet-stream";
-  return `data:${ct};base64,${binary.data}`;
 }
 
-// ------------------------------------------------------------
-// Main
-// ------------------------------------------------------------
+function base64ToBlobUrl(b64, contentType) {
+  // b64: base64 data WITHOUT prefix (Binary.data)
+  const byteChars = atob(b64);
+  const sliceSize = 1024;
+  const byteArrays = [];
+  for (let offset = 0; offset < byteChars.length; offset += sliceSize) {
+    const slice = byteChars.slice(offset, offset + sliceSize);
+    const byteNums = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNums[i] = slice.charCodeAt(i);
+    }
+    byteArrays.push(new Uint8Array(byteNums));
+  }
+  const blob = new Blob(byteArrays, { type: contentType || "application/octet-stream" });
+  return URL.createObjectURL(blob);
+}
+
+// ------------------------ Main ------------------------
 FHIR.oauth2
   .ready()
   .then(async function (client) {
@@ -117,21 +121,10 @@ FHIR.oauth2
     const imageSelect = document.getElementById("imageSelect");
     const submitBtn = document.getElementById("submitBtn");
     const form = document.getElementById("metaForm");
-    const debugEl = document.getElementById("debug");
     const backBtn = document.getElementById("backBtn");
-    const pdfLink = document.getElementById("aiPdfDownload");
 
-    // Debug toggle
-    const debugToggle = document.getElementById("debugToggle");
-    if (debugToggle && debugEl) {
-      debugToggle.addEventListener("click", () => {
-        const show = debugEl.style.display === "none" || debugEl.style.display === "";
-        debugEl.style.display = show ? "block" : "none";
-        debugToggle.textContent = show ? "Hide" : "Show";
-      });
-      // 預設收起
-      debugEl.style.display = "none";
-    }
+    const pdfOpenBtn = document.getElementById("aiPdfOpen");
+    const pdfDownloadBtn = document.getElementById("aiPdfDownload");
 
     showStep(1);
 
@@ -139,6 +132,9 @@ FHIR.oauth2
 
     let docIndex = {}; // docIndex[model][imageLabel] = { rawBinaryId, pngBinaryId, pdfBinaryId }
     let models = new Set();
+
+    // ✅ 記住上一次的 PDF blob URL，避免記憶體累積
+    let currentPdfBlobUrl = null;
 
     // === 1) Search DocumentReference ===
     try {
@@ -180,7 +176,6 @@ FHIR.oauth2
           });
 
           if (!docIndex[model]) docIndex[model] = {};
-          // 同 key 不覆蓋（避免被後面的資料蓋掉）
           if (!docIndex[model][imageLabel]) {
             docIndex[model][imageLabel] = { model, imageLabel, rawBinaryId, pngBinaryId, pdfBinaryId };
           }
@@ -268,7 +263,6 @@ FHIR.oauth2
         const mapping = docIndex[model][imageLabel];
 
         const payload = {
-          patientId: (document.getElementById("patientId")?.value || "").trim(),
           patientName: (document.getElementById("patientName")?.value || "").trim(),
           patientSex: document.getElementById("patientSex")?.value || "",
           patientAge: document.getElementById("patientAge")?.value || "",
@@ -276,10 +270,6 @@ FHIR.oauth2
           model,
           imageLabel
         };
-
-        if (debugEl) {
-          debugEl.textContent = "Collected form data:\n" + JSON.stringify(payload, null, 2);
-        }
 
         showStep(2);
 
@@ -289,37 +279,62 @@ FHIR.oauth2
         setText("infoModel", payload.model);
         setText("infoImage", payload.imageLabel);
 
-        // ✅ 清空：不再造成破圖 X
+        // 清空畫面（避免破圖 X）
         clearImage("previewImage", "rawPlaceholder");
         clearImage("aiSummaryImage", "pngPlaceholder");
         clearFrame("aiPdfFrame", "pdfPlaceholder");
 
-        if (pdfLink) {
-          pdfLink.style.display = "none";
-          pdfLink.href = "#";
+        // 重置 PDF 按鈕
+        if (pdfOpenBtn) { pdfOpenBtn.style.display = "none"; pdfOpenBtn.href = "#"; }
+        if (pdfDownloadBtn) { pdfDownloadBtn.style.display = "none"; pdfDownloadBtn.href = "#"; }
+
+        // 釋放舊 blob URL
+        if (currentPdfBlobUrl) {
+          URL.revokeObjectURL(currentPdfBlobUrl);
+          currentPdfBlobUrl = null;
         }
 
         try {
-          // 1) 原始 BMP
+          // 1) 原始 BMP（用 data URL 顯示）
           if (mapping.rawBinaryId) {
-            const rawUrl = await fetchBinaryAsDataUrl(client, mapping.rawBinaryId);
-            if (rawUrl) setImage("previewImage", "rawPlaceholder", rawUrl);
+            const rawBin = await fetchBinaryResource(client, mapping.rawBinaryId);
+            if (rawBin && rawBin.data) {
+              const ct = rawBin.contentType || "application/octet-stream";
+              const rawUrl = `data:${ct};base64,${rawBin.data}`;
+              setImage("previewImage", "rawPlaceholder", rawUrl);
+            }
           }
 
-          // 2) AI summary PNG
+          // 2) AI summary PNG（用 data URL 顯示）
           if (mapping.pngBinaryId) {
-            const pngUrl = await fetchBinaryAsDataUrl(client, mapping.pngBinaryId);
-            if (pngUrl) setImage("aiSummaryImage", "pngPlaceholder", pngUrl);
+            const pngBin = await fetchBinaryResource(client, mapping.pngBinaryId);
+            if (pngBin && pngBin.data) {
+              const ct = pngBin.contentType || "image/png";
+              const pngUrl = `data:${ct};base64,${pngBin.data}`;
+              setImage("aiSummaryImage", "pngPlaceholder", pngUrl);
+            }
           }
 
-          // 3) AI report PDF
+          // 3) AI report PDF（✅ 用 Blob URL，解決 Download/Open 空白問題）
           if (mapping.pdfBinaryId) {
-            const pdfUrl = await fetchBinaryAsDataUrl(client, mapping.pdfBinaryId);
-            if (pdfUrl) {
-              setFrame("aiPdfFrame", "pdfPlaceholder", pdfUrl);
-              if (pdfLink) {
-                pdfLink.href = pdfUrl;
-                pdfLink.style.display = "inline-flex";
+            const pdfBin = await fetchBinaryResource(client, mapping.pdfBinaryId);
+            if (pdfBin && pdfBin.data) {
+              const ct = pdfBin.contentType || "application/pdf";
+              const blobUrl = base64ToBlobUrl(pdfBin.data, ct);
+              currentPdfBlobUrl = blobUrl;
+
+              // 頁面內完整預覽
+              setFrame("aiPdfFrame", "pdfPlaceholder", blobUrl);
+
+              // 右上角：Open / Print + Download
+              if (pdfOpenBtn) {
+                pdfOpenBtn.href = blobUrl;
+                pdfOpenBtn.style.display = "inline-flex";
+              }
+              if (pdfDownloadBtn) {
+                pdfDownloadBtn.href = blobUrl;
+                pdfDownloadBtn.style.display = "inline-flex";
+                // download 檔名已在 HTML 設定
               }
             }
           }
@@ -341,4 +356,3 @@ FHIR.oauth2
     console.error(error);
     alert("SMART authorization failed. See console.");
   });
-
