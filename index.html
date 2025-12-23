@@ -15,17 +15,14 @@
       --card:#ffffff;
       --text:#111827;
       --muted:#6b7280;
-      --line:rgba(17,24,39,.08);
       --brand:#2563eb;
       --brand2:#1d4ed8;
       --soft:#f9fafb;
     }
 
     *{ box-sizing: border-box; }
-
     html, body { height: 100%; }
 
-    /* ✅ 核心：用自己的 root 做置中，不用 .container（避免被宿主 CSS 干擾） */
     body{
       margin: 0;
       background: var(--bg);
@@ -35,25 +32,25 @@
       line-height: 1.65;
     }
 
+    /* ✅ 核心：用自己的 root 做置中，不吃宿主 .container 影響 */
     #cch-root{
       width: 100%;
       min-height: 100vh;
       display: flex;
-      justify-content: center;      /* ✅ 水平置中 */
+      justify-content: center;
       align-items: flex-start;
       padding: 24px 16px;
     }
-
     .cch-shell{
       width: 100%;
-      max-width: 1120px;            /* ✅ 桌機視覺寬度 */
-      margin: 0 auto;               /* ✅ 保險：再置中一次 */
+      max-width: 1120px;
+      margin: 0 auto;
     }
 
     .app-card{
       border-radius: 18px;
       border: 1px solid rgba(17,24,39,.06);
-      overflow: visible;            /* ✅ 避免圖片/PDF被裁切 */
+      overflow: visible;
       background: var(--card);
     }
 
@@ -134,9 +131,7 @@
       color: var(--brand);
     }
 
-    .card-body{
-      padding: 1.25rem;
-    }
+    .card-body{ padding: 1.25rem; }
 
     /* Section cards */
     .section-card{
@@ -152,14 +147,16 @@
       color:#374151;
       letter-spacing: .10em;
       text-transform: uppercase;
-      margin-bottom: .85rem;
+      margin-bottom: .95rem;
     }
 
+    /* ✅ 1) 表單文字與方塊間距：再拉開一點點 */
+    .form-group{ margin-bottom: 1.15rem; }
     label{
       font-weight: 800;
       color:#374151;
       font-size: .95rem;
-      margin-bottom: .35rem;
+      margin-bottom: .55rem; /* ✅ 原本較近，改更舒服 */
     }
     .form-control{
       border-radius: 10px;
@@ -232,7 +229,7 @@
       height: 100%;
     }
     .asset-head{
-      padding:.75rem .85rem;
+      padding:.8rem .9rem; /* 略增 */
       border-bottom: 1px solid rgba(17,24,39,.06);
       display:flex;
       align-items:center;
@@ -240,9 +237,10 @@
       gap:.5rem;
       background:#fff;
     }
+    /* ✅ 4) Original/AI/PDF 標題字體加大，但小於大標題 */
     .asset-head h5{
       margin:0;
-      font-size: 1.02rem;
+      font-size: 1.18rem; /* ✅ 原本 ~1.02，提升到更清楚 */
       font-weight: 900;
     }
     .asset-body{
@@ -261,48 +259,37 @@
       justify-content:center;
       padding: 8px;
     }
+    /* ✅ PDF區塊不要 padding，避免看起來被「縮」 */
+    .media-box.pdf-box{ padding: 0; }
+
     .media-placeholder{
       color:#6b7280;
       font-weight: 800;
       text-align:center;
       padding: 18px 12px;
     }
+
     #previewImage, #aiSummaryImage{
       max-width: 100%;
       height: auto;
-      display:none; /* ✅ 初始不顯示，避免破圖 X */
+      display:none;
       border-radius: 10px;
       background:#fff;
     }
 
     #aiPdfFrame{
       width: 100%;
-      height: 640px;
+      height: 760px;     /* ✅ 更高，避免看起來被截斷 */
       border: 0;
       background:#fff;
-      display:none; /* ✅ 初始不顯示 */
-      border-radius: 10px;
+      display:none;
     }
 
-    /* Debug */
-    .debug-wrap{
-      border-top: 1px solid rgba(17,24,39,.06);
-      background:#fff;
-      border-bottom-left-radius: 18px;
-      border-bottom-right-radius: 18px;
-      padding: .9rem 1.25rem 1rem 1.25rem;
-    }
-    #debug{
-      max-height: 240px;
-      overflow:auto;
-      background: #0b1020;
-      color: #e5e7eb;
-      border-radius: 12px;
-      padding: .9rem;
-      line-height: 1.45;
-      font-size: .78rem;
-      margin: 0;
-      display:none;
+    /* ✅ 列印時：把 iframe 拉到更高（仍建議用 Open/Print PDF 來列印） */
+    @media print{
+      #cch-root{ padding: 0; }
+      .card-header{ page-break-after: avoid; }
+      #aiPdfFrame{ height: 1100px; }
     }
   </style>
 </head>
@@ -405,12 +392,18 @@
 
           <!-- Step 2 -->
           <div id="step2-view" style="display:none;">
+            <!-- ✅ 3) 左 Back、右 Download / Open 分開 -->
             <div class="d-flex align-items-center justify-content-between mb-2">
               <button id="backBtn" class="btn btn-link px-0">&laquo; Back to input</button>
 
-              <a id="aiPdfDownload" class="btn btn-sm btn-outline-primary" href="#" target="_blank" style="display:none;">
-                Download PDF
-              </a>
+              <div class="d-flex align-items-center" style="gap:.5rem;">
+                <a id="aiPdfOpen" class="btn btn-sm btn-outline-secondary" href="#" target="_blank" style="display:none;">
+                  Open / Print PDF
+                </a>
+                <a id="aiPdfDownload" class="btn btn-sm btn-outline-primary" href="#" download="AI_Report.pdf" style="display:none;">
+                  Download PDF
+                </a>
+              </div>
             </div>
 
             <div class="report-hero">
@@ -454,7 +447,7 @@
             <div class="asset-card mt-1">
               <div class="asset-head"><h5>AI Report (PDF)</h5></div>
               <div class="asset-body">
-                <div class="media-box" style="min-height: 360px;">
+                <div class="media-box pdf-box" style="min-height: 360px;">
                   <div class="media-placeholder" id="pdfPlaceholder">尚未載入（Submit 後顯示）</div>
                   <iframe id="aiPdfFrame" title="AI PDF report"></iframe>
                 </div>
@@ -463,13 +456,7 @@
           </div>
         </div>
 
-        <div class="debug-wrap">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <small class="text-muted font-weight-bold">Debug</small>
-            <button id="debugToggle" class="btn btn-sm btn-outline-secondary" type="button">Show</button>
-          </div>
-          <pre id="debug"></pre>
-        </div>
+        <!-- ✅ 2) Debug 整段移除 -->
       </div>
     </div>
   </div>
