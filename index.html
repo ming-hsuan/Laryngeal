@@ -150,21 +150,27 @@
       margin-bottom: .95rem;
     }
 
-    /* (1) 你要的是：label 尾端(底部)到輸入框的距離加大 */
-    .form-group{ margin-bottom: 1.15rem; } /* 行距你覺得好，就不動 */
+    .form-group{ margin-bottom: 1.15rem; }
+
+    /* ✅ (1-B) label（Patient ID）→ 框邊線：再拉開一點 */
     label{
       font-weight: 800;
       color:#374151;
       font-size: .95rem;
-      margin-bottom: .80rem; /* ✅ 只加大這裡 */
+      margin-bottom: .95rem; /* 原本 0.80rem → 0.95rem */
     }
 
+    /* ✅ (1-A) 框邊線 → 123：只多一點點的內距 */
     .form-control{
       border-radius: 10px;
       border-color: rgba(17,24,39,.14);
       padding-top: .5rem;
       padding-bottom: .5rem;
+
+      padding-left: .90rem;   /* 原本 1.05rem → 改成更「一點點」 */
+      padding-right: .90rem;
     }
+
     .btn-primary{
       border-radius: 999px;
       font-weight: 900;
@@ -238,7 +244,6 @@
       gap: .75rem;
       background:#fff;
     }
-    /* 區塊標題加大，但小於 report-title */
     .asset-head h5{
       margin:0;
       font-size: 1.28rem;
@@ -447,10 +452,8 @@
 
           <!-- Step 2 -->
           <div id="step2-view" style="display:none;">
-            <!-- (2) 你要的排列：左 Back、右 Download -->
             <div class="d-flex align-items-center justify-content-between mb-2">
               <button id="backBtn" class="btn btn-link px-0">&laquo; Back to input</button>
-
               <button id="downloadReportBtn" class="btn btn-sm btn-outline-primary" type="button">
                 Download PDF
               </button>
@@ -495,7 +498,6 @@
             </div>
 
             <div class="asset-card mt-1">
-              <!-- (3) Open / Print PDF 放在 AI Report(PDF) 標題旁，且有間距 -->
               <div class="asset-head">
                 <h5>AI Report (PDF)</h5>
                 <a id="aiPdfOpen" class="btn btn-sm btn-outline-secondary" href="#" target="_blank" style="display:none; margin-left: 10px;">
@@ -544,3 +546,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
