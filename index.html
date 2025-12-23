@@ -32,7 +32,6 @@
       line-height: 1.65;
     }
 
-    /* 置中：不吃宿主 .container 影響 */
     #cch-root{
       width: 100%;
       min-height: 100vh;
@@ -150,25 +149,46 @@
       margin-bottom: .95rem;
     }
 
-    .form-group{ margin-bottom: 1.15rem; }
-
-    /* ✅ (1-B) label（Patient ID）→ 框邊線：再拉開一點 */
-    label{
+    /* ✅ 你要的「Patient ID    [框]」：label 與 input 同一行 + 增加水平距離 */
+    .section-card .form-group{
+      margin-bottom: 1.15rem;           /* 你說行距覺得好：保留 */
+      display: flex;                   /* ✅ 變成同一行 */
+      align-items: center;
+      gap: 16px;                       /* ✅ 核心：字尾 → 框線 的水平距離加寬 */
+    }
+    .section-card .form-group label{
+      margin: 0;                       /* ✅ 不要上下 margin，避免干擾 */
       font-weight: 800;
       color:#374151;
       font-size: .95rem;
-      margin-bottom: .95rem; /* 原本 0.80rem → 0.95rem */
+      white-space: nowrap;
+      min-width: 132px;                /* ✅ 讓 label 有固定寬度（看起來更像表單） */
     }
-
-    /* ✅ (1-A) 框邊線 → 123：只多一點點的內距 */
-    .form-control{
+    .section-card .form-group .form-control{
+      flex: 1 1 auto;
+      width: auto;                     /* ✅ 避免被 bootstrap 固定寬度影響 */
       border-radius: 10px;
       border-color: rgba(17,24,39,.14);
       padding-top: .5rem;
       padding-bottom: .5rem;
 
-      padding-left: .90rem;   /* 原本 1.05rem → 改成更「一點點」 */
-      padding-right: .90rem;
+      padding-left: .82rem;            /* ✅ 框線 → 文字（123）只多一點點 */
+      padding-right: .82rem;
+    }
+
+    /* 小螢幕：回到上下排列（避免太擠） */
+    @media (max-width: 575.98px){
+      .section-card .form-group{
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .section-card .form-group label{
+        min-width: 0;
+      }
+      .section-card .form-group .form-control{
+        width: 100%;
+      }
     }
 
     .btn-primary{
@@ -290,7 +310,7 @@
       display:none;
     }
 
-    /* Preview Modal (Download PDF 先預覽) */
+    /* Preview Modal */
     .cch-modal{
       position: fixed;
       inset: 0;
@@ -452,8 +472,10 @@
 
           <!-- Step 2 -->
           <div id="step2-view" style="display:none;">
-            <div class="d-flex align-items-center justify-content-between mb-2">
+            <!-- ✅ Download PDF 固定在最右邊（不是跟 Back 貼一起） -->
+            <div class="d-flex align-items-center w-100 mb-2">
               <button id="backBtn" class="btn btn-link px-0">&laquo; Back to input</button>
+              <div class="flex-grow-1"></div>
               <button id="downloadReportBtn" class="btn btn-sm btn-outline-primary" type="button">
                 Download PDF
               </button>
@@ -500,7 +522,8 @@
             <div class="asset-card mt-1">
               <div class="asset-head">
                 <h5>AI Report (PDF)</h5>
-                <a id="aiPdfOpen" class="btn btn-sm btn-outline-secondary" href="#" target="_blank" style="display:none; margin-left: 10px;">
+                <a id="aiPdfOpen" class="btn btn-sm btn-outline-secondary" href="#" target="_blank"
+                   style="display:none; margin-left: 12px;">
                   Open / Print PDF
                 </a>
               </div>
@@ -546,4 +569,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
