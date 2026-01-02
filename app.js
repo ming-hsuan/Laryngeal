@@ -7,6 +7,13 @@ const MODEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/model";
 const IMAGE_LABEL_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/image-label";
 const RAW_BINARY_SYSTEM = "https://cch.org.tw/fhir/larynx-demo/raw-binary-id";
 
+// === Demo inference endpoint (public HTTPS) ===
+// For contest demo: this endpoint can "look up" precomputed results by (model + rawBinaryId) or (model + sha256).
+// Replace with your deployed URL, e.g. "https://your-demo-infer.onrender.com"
+
+const INFER_API_BASE = "http://127.0.0.1:50123";
+
+
 // ------------------------ UI helpers ------------------------
 function showStep(step) {
   const step1View = document.getElementById("step1-view");
@@ -105,6 +112,47 @@ function bytesToBlobUrl(bytes, contentType) {
   const blob = new Blob([bytes], { type: contentType || "application/octet-stream" });
   return URL.createObjectURL(blob);
 }
+
+// SHA-256 helper (Web Crypto)
+async function sha256Hex(u8) {
+  if (!u8) return null;
+  const buf = u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  const out = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return out;
+}
+
+// Call demo inference endpoint (can be a lookup service for precomputed outputs)
+//
+// This demo supports two lookup styles:
+// 1) rawBinaryId (recommended for your current THAS demo upload): { model, rawBinaryId }
+// 2) sha256 (future upgrade): { model, sha256 }
+//
+// We'll send both if available; the API can decide which one to use.
+async function callDemoInference(model, rawBinaryId, sha256, imageLabel) {
+  if (!INFER_API_BASE || INFER_API_BASE.includes("YOUR_PUBLIC_INFER_API")) {
+    throw new Error("INFER_API_BASE is not set");
+  }
+  const url = INFER_API_BASE.replace(/\/+$/, "") + "/predict";
+
+  const payload = { model, imageLabel };
+  if (rawBinaryId) payload.rawBinaryId = String(rawBinaryId);
+  if (sha256) payload.sha256 = String(sha256);
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok) {
+    const txt = await resp.text().catch(() => "");
+    throw new Error("Inference API error: " + resp.status + " " + txt);
+  }
+  return await resp.json();
+}
+
 
 // ------------------------ Download PDF (preview first) ------------------------
 function showReportModal(yes) {
@@ -470,6 +518,9 @@ FHIR.oauth2
         setText("infoModel", payload.model);
         setText("infoImage", payload.imageLabel);
 
+        setText("infoRunId", "");
+        setText("infoSha256", "");
+
         clearImage("previewImage", "rawPlaceholder");
         clearImage("aiSummaryImage", "pngPlaceholder");
         clearFrame("aiPdfFrame", "pdfPlaceholder");
@@ -487,19 +538,60 @@ FHIR.oauth2
         currentAiPdfBytes = null;
 
         try {
-          // RAW
+          // 1) Fetch RAW BMP from THAS (this is the inference input)
+          let rawBytes = null;
+          let inputSha = null;
+
           if (mapping.rawBinaryId) {
             const rawBin = await fetchBinaryResource(client, mapping.rawBinaryId);
             if (rawBin && rawBin.data) {
               const ct = rawBin.contentType || "application/octet-stream";
               const rawUrl = `data:${ct};base64,${rawBin.data}`;
               setImage("previewImage", "rawPlaceholder", rawUrl);
+
+              rawBytes = base64ToUint8Array(rawBin.data);
+              try {
+              inputSha = await sha256Hex(rawBytes);
+              setText("infoSha256", inputSha);
+            } catch (shaErr) {
+              console.warn("SHA-256 failed (non-secure context or crypto not available).", shaErr);
+              inputSha = null;
+              setText("infoSha256", "");
             }
+}
           }
 
+          // 2) Call demo inference endpoint (can be a lookup service for precomputed outputs)
+          let predictedPngId = null;
+          let predictedPdfId = null;
+          let runId = null;
+
+          if (mapping.rawBinaryId || inputSha) {
+            try {
+              const pred = await callDemoInference(payload.model, mapping.rawBinaryId, inputSha, payload.imageLabel);
+
+              // Accept both camelCase and snake_case response fields
+              predictedPngId = pred.pngBinaryId || pred.png_binary_id || null;
+              predictedPdfId = pred.pdfBinaryId || pred.pdf_binary_id || null;
+              runId = pred.runId || pred.run_id || null;
+            } catch (inferErr) {
+              console.warn("Demo inference failed, fallback to THAS DocumentReference attachments.", inferErr);
+              runId = "N/A (fallback)";
+              predictedPngId = mapping.pngBinaryId || null;
+              predictedPdfId = mapping.pdfBinaryId || null;
+            }
+          } else {
+            runId = "N/A";
+            predictedPngId = mapping.pngBinaryId || null;
+            predictedPdfId = mapping.pdfBinaryId || null;
+          }
+
+          setText("infoRunId", runId);
+
+          // 3) Load predicted outputs (PNG/PDF) from THAS by Binary id
           // PNG
-          if (mapping.pngBinaryId) {
-            const pngBin = await fetchBinaryResource(client, mapping.pngBinaryId);
+          if (predictedPngId) {
+            const pngBin = await fetchBinaryResource(client, predictedPngId);
             if (pngBin && pngBin.data) {
               const ct = pngBin.contentType || "image/png";
               const pngUrl = `data:${ct};base64,${pngBin.data}`;
@@ -508,8 +600,8 @@ FHIR.oauth2
           }
 
           // PDF
-          if (mapping.pdfBinaryId) {
-            const pdfBin = await fetchBinaryResource(client, mapping.pdfBinaryId);
+          if (predictedPdfId) {
+            const pdfBin = await fetchBinaryResource(client, predictedPdfId);
             if (pdfBin && pdfBin.data) {
               const ct = pdfBin.contentType || "application/pdf";
               const bytes = base64ToUint8Array(pdfBin.data);
