@@ -1,27 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>喉部 BMP Demo - Launch</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Redirecting...</title>
 </head>
 <body>
-  <p>Launching SMART app...</p>
-
-  <!-- SMART on FHIR JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
-
   <script>
-    // TODO：把這裡換成你在 THAS 註冊 App 拿到的 client_id
-    const CLIENT_ID = "YOUR_THAS_CLIENT_ID";
-
-    FHIR.oauth2.authorize({
-      client_id: CLIENT_ID,
-      // THAS 是 EHR launch，iss / launch 會由 Sandbox 自己帶在 URL 上，不用自己填
-      scope: "launch openid fhirUser patient/*.read",
-      // 這裡用相對路徑即可（代表 launch.html 同一層的 index.html）
-      redirectUri: "index.html"
-    });
+    // ✅ 轉到你已測通的新站（保留 querystring: iss/launch 等）
+    const targetBase = "https://ming-hsuan.github.io/Laryngeal_demo/launch.html";
+    const qs = window.location.search || "";
+    const hash = window.location.hash || "";
+    window.location.replace(targetBase + qs + hash);
   </script>
+
+  <noscript>
+    <meta http-equiv="refresh" content="0;url=https://ming-hsuan.github.io/Laryngeal_demo/launch.html">
+    正在轉址到新版應用程式…
+  </noscript>
 </body>
 </html>
 
